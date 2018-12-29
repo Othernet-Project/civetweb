@@ -5788,6 +5788,8 @@ set_non_blocking_mode(SOCKET sock)
 
 #else
 
+time_t skylark_fs_build_time = 0;
+
 static int
 mg_stat(const struct mg_connection *conn,
         const char *path,
@@ -5816,6 +5818,12 @@ mg_stat(const struct mg_connection *conn,
 	if (0 == stat(path, &st)) {
 		filep->size = (uint64_t)(st.st_size);
 		filep->last_modified = st.st_mtime;
+		if(skylark_fs_build_time==0) {
+			skylark_fs_build_time = atol(getenv("RXOS_TIMESTAMP_EPOCH"));
+		}
+		if(filep->last_modified < skylark_fs_build_time) {
+			filep->last_modified = skylark_fs_build_time;
+		}
 		filep->is_directory = S_ISDIR(st.st_mode);
 		return 1;
 	}
